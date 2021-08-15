@@ -77,7 +77,6 @@ public class ServerManager : MonoBehaviour, INetEventListener
       foreach (var serverPlayer in serverPlayers)
       {
         var position = serverPlayer.gameObject.transform.position;
-        print(position);
         // var rotation = serverPlayer.gameObject.transform.localEulerAngles.y;
         PlayerState ps = new PlayerState
         {
@@ -86,9 +85,6 @@ public class ServerManager : MonoBehaviour, INetEventListener
           Rotation = 0,
           Tick = serverTick
         };
-        print(",");
-        print(ps.Position);
-
         serverPlayer.peer.Send(WriteSerializable(PacketType.PlayerState, ps), DeliveryMethod.ReliableOrdered);
       }
     }

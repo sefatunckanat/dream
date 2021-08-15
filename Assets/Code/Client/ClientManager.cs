@@ -19,6 +19,7 @@ public class ClientManager : MonoBehaviour, INetEventListener
 
   public GameObject playerPrefab;
   public GameObject targetPlayer;
+  public ushort lastReceiveTick;
 
   void Awake()
   {
@@ -91,11 +92,16 @@ public class ClientManager : MonoBehaviour, INetEventListener
   void UpdateLocalState()
   {
     if (targetPlayer == null)
+    {
       targetPlayer = Instantiate(playerPrefab);
+      GameObject.FindObjectOfType<TPCamera>().target = targetPlayer.transform;
 
-    print(cachedPlayerState.Position);
+      targetPlayer.AddComponent<ClientPlayer>();
+    }
 
-    targetPlayer.transform.position = cachedPlayerState.Position;
+    ushort tick = cachedPlayerState.Tick;
+    targetPlayer.transform.position = Vector3.Lerp(targetPlayer.transform.position, cachedPlayerState.Position, 1f);
+    lastReceiveTick = tick;
     // targetPlayer.transform.localEulerAngles = new Vector3(0, cachedPlayerState.Rotation, 0);
   }
 
