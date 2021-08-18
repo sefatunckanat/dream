@@ -9,7 +9,17 @@ using ParrelSync;
 
 public class ClientManager : MonoBehaviour, INetEventListener
 {
-
+  private static ClientManager m_instance;
+  public static ClientManager Init()
+  {
+    if (!m_instance)
+    {
+      m_instance = FindObjectOfType(typeof(ClientManager)) as ClientManager;
+      if (!m_instance)
+        throw new UnityException("Client Manager not found in current scene.");
+    }
+    return m_instance;
+  }
   NetManager client;
   public bool connected = false;
   private NetDataWriter _writer;
@@ -20,9 +30,11 @@ public class ClientManager : MonoBehaviour, INetEventListener
   public GameObject playerPrefab;
   public GameObject targetPlayer;
   public ushort lastReceiveTick;
+  public ushort delayTick = 100;
 
   void Awake()
   {
+    DontDestroyOnLoad(this);
     cachedPlayerState = new PlayerState();
     client = new NetManager(this);
     _writer = new NetDataWriter();
@@ -100,6 +112,7 @@ public class ClientManager : MonoBehaviour, INetEventListener
     }
 
     ushort tick = cachedPlayerState.Tick;
+    print(tick);
     targetPlayer.transform.position = Vector3.Lerp(targetPlayer.transform.position, cachedPlayerState.Position, 1f);
     lastReceiveTick = tick;
     // targetPlayer.transform.localEulerAngles = new Vector3(0, cachedPlayerState.Rotation, 0);

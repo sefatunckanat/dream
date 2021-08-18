@@ -10,7 +10,17 @@ using ParrelSync;
 
 public class ServerManager : MonoBehaviour, INetEventListener
 {
-
+  private static ServerManager m_instance;
+  public static ServerManager Init()
+  {
+    if (!m_instance)
+    {
+      m_instance = FindObjectOfType(typeof(ServerManager)) as ServerManager;
+      if (!m_instance)
+        throw new UnityException("Server Manager not found in current scene.");
+    }
+    return m_instance;
+  }
   public int GAME_PORT = 3000;
   NetManager server;
   LogicTimer logicTimer;
