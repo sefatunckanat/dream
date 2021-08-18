@@ -4,35 +4,47 @@ using UnityEngine;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System.Net;
+using System;
 
-[System.Serializable]
-public class ServerPlayer
+public class ServerPlayer : MonoBehaviour
 {
+  private ServerManager serverManager;
+  public bool initialized = false;
   public NetPeer peer;
   public string endPoint;
   public int index;
-  public Vector3 Position = new Vector3(0, 20, 0);
-  public GameObject gameObject;
+  private Vector3 _initialPosition = new Vector3(0, 20, 0);
 
-  [Header("-")]
-  public bool groundedPlayer;
+  [Header("Inputs & Controls")]
+  private bool groundedPlayer;
   public CharacterController characterController;
   private float gravityValue = -9.81f;
   public Vector2 playerInput = new Vector2(0, 0);
   public bool playerInputSpace = false;
   public float moveSpeed = 3f;
 
-  public ServerPlayer(NetPeer peer, int index, GameObject prefab)
+  [Header("Interpolation")]
+  [SerializeField]
+  public List<Snapshot> snapshots = new List<Snapshot>();
+
+  [Serializable]
+  public class Snapshot
   {
+    public ushort Tick;
+    public Vector3 Position;
+  }
+
+  public void Init(NetPeer peer, int index)
+  {
+    serverManager = ServerManager.Init();
     this.peer = peer;
     this.index = peer.Id;
     this.endPoint = peer.EndPoint.ToString();
 
-    this.gameObject = UnityEngine.GameObject.Instantiate(prefab);
-    this.gameObject.transform.position = Position;
-    this.gameObject.name = "C" + peer.Id.ToString() + '-' + peer.EndPoint.ToString();
+    this.transform.position = _initialPosition;
+    characterController = gameObject.GetComponent<CharacterController>();
 
-    characterController = this.gameObject.GetComponent<CharacterController>();
+    initialized = true;
   }
 
   public void ApplyInput(PlayerInputPacket command, float delta)
@@ -55,12 +67,12 @@ public class ServerPlayer
       playerInputSpace = true;
     else
       playerInputSpace = false;
-
   }
 
   private float yVelocity = 0;
-  public void Update(float delta)
+  public void _Update(float delta)
   {
+    if (!initialized) return;
     groundedPlayer = characterController.isGrounded;
 
     Vector3 _moveDirection = Vector3.right * playerInput.x + Vector3.forward * playerInput.y;
@@ -80,5 +92,7 @@ public class ServerPlayer
     this.characterController.Move(_moveDirection * delta);
     // this.gameObject.transform.position += playerVelocity;
     // this.transform.name = peer.Ping.ToString();
+
+    snapshots.Add(new Snapshot() { Tick = serverManager.Tick, Position = transform.position });
   }
 }

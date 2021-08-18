@@ -4,7 +4,7 @@ using ParrelSync;
 
 public class LogicTimer
 {
-  public const float FramesPerSecond = 60.0f;
+  public const float FramesPerSecond = 30.0f;
   public const float FixedDelta = 1.0f / FramesPerSecond;
 
   private double _accumulator;

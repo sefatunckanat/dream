@@ -29,7 +29,7 @@ public class ClientManager : MonoBehaviour, INetEventListener
 
   public GameObject playerPrefab;
   public GameObject targetPlayer;
-  public ushort lastReceiveTick;
+  public ushort lastReceiveTick = 0;
   public ushort delayTick = 100;
 
   void Awake()
@@ -79,6 +79,8 @@ public class ClientManager : MonoBehaviour, INetEventListener
       packet.Keys |= MovementKeys.Down;
     if (Input.GetKey(KeyCode.Space))
       packet.Keys |= MovementKeys.Jump;
+
+    packet.Id = lastReceiveTick;
 
     packet.Serialize(_writer);
     server.Send(_writer, DeliveryMethod.Unreliable);

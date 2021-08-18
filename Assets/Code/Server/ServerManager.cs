@@ -79,9 +79,9 @@ public class ServerManager : MonoBehaviour, INetEventListener
 
     foreach (var serverPlayer in serverPlayers)
     {
-      serverPlayer.Update(LogicTimer.FixedDelta);
+      serverPlayer._Update(LogicTimer.FixedDelta);
     }
-    if (serverTick % 2 == 0)
+    if (serverTick % 5 == 0)
     {
       // Send Data
       foreach (var serverPlayer in serverPlayers)
@@ -134,8 +134,15 @@ public class ServerManager : MonoBehaviour, INetEventListener
   public void OnPeerConnected(NetPeer peer)
   {
     Debug.Log("[S] New Client Connected. " + peer.EndPoint);
-    var serverPlayer = new ServerPlayer(peer, serverPlayers.Count, playerPrefab);
+
+    var playerObject = Instantiate(playerPrefab);
+    playerObject.name = "C" + peer.Id.ToString() + '-' + peer.EndPoint.ToString();
+
+    playerObject.AddComponent<ServerPlayer>();
+    var serverPlayer = playerObject.GetComponent<ServerPlayer>();
+    serverPlayer.Init(peer, serverPlayers.Count);
     serverPlayers.Add(serverPlayer);
+
   }
 
   public void OnNetworkError(IPEndPoint endPoint, SocketError socketError)
