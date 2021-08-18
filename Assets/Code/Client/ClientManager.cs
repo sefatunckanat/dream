@@ -32,6 +32,10 @@ public class ClientManager : MonoBehaviour, INetEventListener
   public ushort lastReceiveTick = 0;
   public ushort delayTick = 100;
 
+  [SerializeField]
+  public List<PlayerState> playerStates = new List<PlayerState>();
+  public ushort lastServerTick;
+  private const int MaxStoredCommands = 60;
   void Awake()
   {
     DontDestroyOnLoad(this);
@@ -95,6 +99,34 @@ public class ClientManager : MonoBehaviour, INetEventListener
     //   velocity.x = -1f;
     // if ((packet.Keys & NetworkPackets.MovementKeys.Right) != 0)
     //   velocity.x = 1f;
+
+
+    RenderPlayer();
+  }
+
+  public void RenderPlayer()
+  {
+
+    // Vector3 lerpPosition = Vector3.Lerp(targetPlayer.transform.position, playerStates[playerStates.Count - 1].Position, Time.deltaTime);
+    // return;
+    // if (playerStates.Count == 0) return;
+    // if (playerStates.Count == 1)
+    // {
+    //   targetPlayer.transform.position = playerStates[0].Position;
+    //   playerStates.Clear();
+    //   return;
+    // }
+    // for (int i = 0; i < playerStates.Count - 2; i++)
+    // {
+    //   var to = playerStates[i];
+    //   var from = playerStates[i + 1];
+
+
+    //   print(string.Format("{0} {1} -> {2} {3}", to.Tick, to.Position, from.Tick, from.Position));
+    //   Vector3 lerpPosition = Vector3.Lerp(to.Position, from.Position, Time.deltaTime);
+    //   targetPlayer.transform.position = lerpPosition;
+    // }
+    // playerStates.Clear();
   }
 
   public void OnDestroy()
@@ -113,11 +145,16 @@ public class ClientManager : MonoBehaviour, INetEventListener
       targetPlayer.AddComponent<ClientPlayer>();
     }
 
+    playerStates.Add(cachedPlayerState);
+    if (playerStates.Count > MaxStoredCommands)
+      playerStates.RemoveAt(0);
     ushort tick = cachedPlayerState.Tick;
-    print(tick);
-    targetPlayer.transform.position = Vector3.Lerp(targetPlayer.transform.position, cachedPlayerState.Position, 1f);
+    // print(string.Format("Tick:{0} Position:{1}", tick, cachedPlayerState.Position));
+    targetPlayer.transform.position = Vector3.Lerp(targetPlayer.transform.position, cachedPlayerState.Position, (1 + Vector3.Distance(targetPlayer.transform.position, cachedPlayerState.Position)) / Time.deltaTime);
     lastReceiveTick = tick;
-    // targetPlayer.transform.localEulerAngles = new Vector3(0, cachedPlayerState.Rotation, 0);
+    targetPlayer.transform.localEulerAngles = new Vector3(0, cachedPlayerState.Rotation, 0);
+
+    lastServerTick = cachedPlayerState.Tick;
   }
 
   public void OnPeerConnected(NetPeer peer)

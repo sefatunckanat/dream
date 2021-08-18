@@ -81,21 +81,26 @@ public class ServerManager : MonoBehaviour, INetEventListener
     {
       serverPlayer._Update(LogicTimer.FixedDelta);
     }
-    if (serverTick % 5 == 0)
+    if (serverTick % 2 == 0)
     {
       // Send Data
       foreach (var serverPlayer in serverPlayers)
       {
-        var position = serverPlayer.gameObject.transform.position;
-        // var rotation = serverPlayer.gameObject.transform.localEulerAngles.y;
-        PlayerState ps = new PlayerState
+        //TODO: Prepare AllSnapshot Packet
+        foreach (var snapshot in serverPlayer.snapshots)
         {
-          Id = ((byte)serverPlayer.peer.Id),
-          Position = position,
-          Rotation = 0,
-          Tick = serverTick
-        };
-        serverPlayer.peer.Send(WriteSerializable(PacketType.PlayerState, ps), DeliveryMethod.ReliableOrdered);
+          serverPlayer.peer.Send(WriteSerializable(PacketType.PlayerState, snapshot), DeliveryMethod.ReliableOrdered);
+        }
+        serverPlayer.snapshots.Clear();
+        // var position = serverPlayer.gameObject.transform.position;
+        // // var rotation = serverPlayer.gameObject.transform.localEulerAngles.y;
+        // PlayerState ps = new PlayerState
+        // {
+        //   Id = ((byte)serverPlayer.peer.Id),
+        //   Position = position,
+        //   Rotation = 0,
+        //   Tick = serverTick
+        // };
       }
     }
   }
@@ -140,7 +145,7 @@ public class ServerManager : MonoBehaviour, INetEventListener
 
     playerObject.AddComponent<ServerPlayer>();
     var serverPlayer = playerObject.GetComponent<ServerPlayer>();
-    serverPlayer.Init(peer, serverPlayers.Count);
+    serverPlayer.Init(peer);
     serverPlayers.Add(serverPlayer);
 
   }

@@ -75,6 +75,7 @@ public struct PlayerInputPacket : INetSerializable
   }
 }
 
+[Serializable]
 public struct PlayerState : INetSerializable
 {
   public byte Id;

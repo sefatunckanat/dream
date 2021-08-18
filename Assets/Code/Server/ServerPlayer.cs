@@ -8,6 +8,7 @@ using System;
 
 public class ServerPlayer : MonoBehaviour
 {
+  [Header("Config")]
   private ServerManager serverManager;
   public bool initialized = false;
   public NetPeer peer;
@@ -16,16 +17,16 @@ public class ServerPlayer : MonoBehaviour
   private Vector3 _initialPosition = new Vector3(0, 20, 0);
 
   [Header("Inputs & Controls")]
-  private bool groundedPlayer;
-  public CharacterController characterController;
-  private float gravityValue = -9.81f;
   public Vector2 playerInput = new Vector2(0, 0);
   public bool playerInputSpace = false;
   public float moveSpeed = 3f;
+  private bool groundedPlayer;
+  private CharacterController characterController;
+  private float gravityValue = -9.81f;
 
   [Header("Interpolation")]
   [SerializeField]
-  public List<Snapshot> snapshots = new List<Snapshot>();
+  public List<PlayerState> snapshots = new List<PlayerState>();
 
   [Serializable]
   public class Snapshot
@@ -34,7 +35,7 @@ public class ServerPlayer : MonoBehaviour
     public Vector3 Position;
   }
 
-  public void Init(NetPeer peer, int index)
+  public void Init(NetPeer peer)
   {
     serverManager = ServerManager.Init();
     this.peer = peer;
@@ -93,6 +94,6 @@ public class ServerPlayer : MonoBehaviour
     // this.gameObject.transform.position += playerVelocity;
     // this.transform.name = peer.Ping.ToString();
 
-    snapshots.Add(new Snapshot() { Tick = serverManager.Tick, Position = transform.position });
+    snapshots.Add(new PlayerState() { Tick = serverManager.Tick, Position = transform.position, Rotation = transform.rotation.y, Id = (byte)this.index });
   }
 }
